@@ -1,0 +1,83 @@
+﻿@model WebApplication1.Models.Course
+
+@{
+    ViewData["Title"] = "Создать курс";
+}
+
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">Создание нового курса</h4>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Name" class="form-label">Название курса</label>
+                    <input asp-for="Name" class="form-control" placeholder="Введите название курса" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Type" class="form-label">Тип курса</label>
+                    <input asp-for="Type" class="form-control" placeholder="Онлайн / офлайн" />
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Days" class="form-label">Длительность (в днях)</label>
+                    <input asp-for="Days" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="Days" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Capacity" class="form-label">Вместимость</label>
+                    <input asp-for="Capacity" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="Capacity" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Price" class="form-label">Цена (без НДС)</label>
+                    <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Цена с НДС (20%)</label>
+                    <input id="priceWithVat" class="form-control bg-light" readonly />
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-success me-2">
+                    <i class="bi bi-plus-circle"></i> Создать
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const priceInput = document.querySelector('[name="Price"]');
+        const vatOutput = document.getElementById('priceWithVat');
+
+        function updateVat() {
+            const price = parseFloat(priceInput.value) || 0;
+            const withVat = price * 1.2;
+            vatOutput.value = withVat.toFixed(2);
+        }
+
+        document.addEventListener('DOMContentLoaded', updateVat);
+        priceInput.addEventListener('input', updateVat);
+    </script>
+}

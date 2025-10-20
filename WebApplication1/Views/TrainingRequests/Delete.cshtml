@@ -1,0 +1,42 @@
+﻿@model WebApplication1.Models.TrainingRequest
+
+@{
+    ViewData["Title"] = "Удаление заявки";
+}
+
+<h1 class="mb-4 text-danger">Удаление заявки</h1>
+
+<div class="alert alert-warning" role="alert">
+    <strong>Вы уверены, что хотите удалить эту заявку?</strong>
+    Это действие нельзя будет отменить.
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Дата заявки</dt>
+            <dd class="col-sm-9">@Model.RequestDate.ToString("dd.MM.yyyy")</dd>
+
+            <dt class="col-sm-3">Количество участников</dt>
+            <dd class="col-sm-9">@Model.NumberOfPeople</dd>
+
+            <dt class="col-sm-3">Дата начала</dt>
+            <dd class="col-sm-9">@Model.StartDate.ToString("dd.MM.yyyy")</dd>
+
+            <dt class="col-sm-3">Дата окончания</dt>
+            <dd class="col-sm-9">@Model.EndDate.ToString("dd.MM.yyyy")</dd>
+
+            <dt class="col-sm-3">Курс</dt>
+            <dd class="col-sm-9">@Model.Course?.Name</dd>
+
+            <dt class="col-sm-3">Организация</dt>
+            <dd class="col-sm-9">@Model.Org?.Name</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="RequestId" />
+    <button type="submit" class="btn btn-danger me-2">🗑️ Удалить</button>
+    <a asp-action="Index" class="btn btn-secondary">⬅️ Отмена</a>
+</form>

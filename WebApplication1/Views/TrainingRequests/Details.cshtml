@@ -1,0 +1,91 @@
+﻿@model WebApplication1.Models.TrainingRequest
+@{
+    ViewData["Title"] = "Детали заявки";
+}
+
+<h2 class="text-primary mb-4">📋 Заявка №@Model.RequestId</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+
+<div class="card shadow-sm p-4 mb-4">
+    <p><strong>Организация:</strong> @Model.Org.Name</p>
+    <p><strong>Курс:</strong> @Model.Course.Name</p>
+    <p><strong>Преподаватель:</strong> @Model.Assignment.Teacher.FullName</p>
+    <p><strong>Даты:</strong> @Model.StartDate — @Model.EndDate</p>
+    <p><strong>Количество участников:</strong> @Model.NumberOfPeople</p>
+    <p>
+        <strong>Мест занято:</strong> @Model.RequestParticipants.Count из @ViewBag.TotalCapacity
+        @if (ViewBag.RemainingSlots > 0)
+        {
+            <span class="badge bg-success">Осталось мест: @ViewBag.RemainingSlots</span>
+        }
+        else
+        {
+            <span class="badge bg-danger">Набор завершён</span>
+        }
+    </p>
+</div>
+
+<h4 class="mt-4">👥 Участники заявки</h4>
+
+@if (Model.RequestParticipants.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ФИО</th>
+                <th>Должность</th>
+                <th class="text-end">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.RequestParticipants)
+            {
+                <tr>
+                    <td>@p.FullName</td>
+                    <td>@p.Position</td>
+                    <td class="text-end">
+                        <form asp-controller="RequestParticipants"
+                              asp-action="Delete"
+                              asp-route-id="@p.ParticipantId"
+                              method="post"
+                              onsubmit="return confirm('Удалить участника @p.FullName?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                🗑 Удалить
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+else
+{
+    <p class="text-muted">Участники пока не добавлены.</p>
+}
+
+@if (ViewBag.RemainingSlots > 0)
+{
+    <a asp-controller="RequestParticipants"
+       asp-action="Create"
+       asp-route-requestId="@Model.RequestId"
+       class="btn btn-success mt-3">
+        ➕ Добавить участника
+    </a>
+}
+else
+{
+    <div class="alert alert-warning mt-3">
+        ⚠ Все места заняты — добавить участника нельзя.
+    </div>
+}
+
+<a asp-action="Index" class="btn btn-secondary mt-3">← Назад к списку заявок</a>

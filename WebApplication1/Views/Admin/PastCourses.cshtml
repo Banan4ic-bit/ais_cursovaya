@@ -1,0 +1,36 @@
+﻿@model IEnumerable<WebApplication1.Models.TeacherAssignment>
+@{
+    ViewData["Title"] = "Прошедшие курсы";
+}
+
+<h2 class="text-primary mb-4">🕒 Прошедшие курсы</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Нет завершённых курсов.</div>
+}
+else
+{
+    <table class="table table-striped align-middle shadow-sm">
+        <thead class="table-primary">
+            <tr>
+                <th>Курс</th>
+                <th>Преподаватель</th>
+                <th>Начало</th>
+                <th>Окончание</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model)
+            {
+                <tr>
+                    <td>@a.Course.Name</td>
+                    <td>@a.Teacher.FullName</td>
+                    <td>@a.StartDate.ToString("dd.MM.yyyy")</td>
+                    <td>@a.EndDate.ToString("dd.MM.yyyy")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<a asp-action="Index" class="btn btn-secondary mt-3">← Назад в панель администратора</a>

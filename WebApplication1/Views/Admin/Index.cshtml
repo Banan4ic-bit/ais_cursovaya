@@ -1,0 +1,175 @@
+﻿@model WebApplication1.Models.AdminDashboardVm
+@{
+    ViewData["Title"] = "Панель администратора";
+}
+
+<div class="container mt-4">
+
+    <h1 class="text-primary mb-4 text-center">Панель администратора</h1>
+
+    <!-- 🔹 Быстрые ссылки -->
+    <div class="d-flex justify-content-center mb-4 flex-wrap gap-2">
+        <a asp-action="PastCourses" class="btn btn-outline-secondary">
+            🕒 Прошедшие курсы
+        </a>
+        <a asp-controller="TeacherAssignments" asp-action="Index" class="btn btn-outline-primary">
+            📅 Назначения курсов
+        </a>
+        <a asp-controller="TrainingRequests" asp-action="Index" class="btn btn-outline-success">
+            📋 Все заявки
+        </a>
+    </div>
+
+    <!-- Быстрые метрики -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted">Курсы</div>
+                    <div class="display-6 fw-bold">@Model.CoursesCount</div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a class="btn btn-sm btn-outline-primary w-100" asp-controller="Courses" asp-action="Index">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted">Преподаватели</div>
+                    <div class="display-6 fw-bold">@Model.TeachersCount</div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a class="btn btn-sm btn-outline-primary w-100" asp-controller="Teachers" asp-action="Index">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted">Организации</div>
+                    <div class="display-6 fw-bold">@Model.OrganizationsCount</div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a class="btn btn-sm btn-outline-primary w-100" asp-controller="Organizations" asp-action="Index">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-muted">Заявки</div>
+                    <div class="display-6 fw-bold">@Model.RequestsCount</div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a class="btn btn-sm btn-outline-primary w-100" asp-controller="TrainingRequests" asp-action="Index">Открыть</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ближайшие запуски курсов -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Ближайшие запуски курсов</h5>
+                <a class="btn btn-sm btn-light" asp-controller="TeacherAssignments" asp-action="Index">Все назначения</a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.UpcomingAssignments.Any())
+            {
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Курс</th>
+                            <th>Преподаватель</th>
+                            <th>Даты</th>
+                            <th class="text-center">Вместимость</th>
+                            <th class="text-center">Заявлено</th>
+                            <th class="text-center">Осталось</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.UpcomingAssignments)
+                        {
+                            var statusClass = a.Remaining <= 0 ? "badge bg-danger" : (a.Remaining <= 3 ? "badge bg-warning text-dark" : "badge bg-success");
+                            <tr>
+                                <td>@a.CourseName</td>
+                                <td>@a.TeacherName</td>
+                                <td>@a.StartDate.ToString("yyyy-MM-dd") — @a.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td class="text-center">@a.Capacity</td>
+                                <td class="text-center">@a.Enrolled</td>
+                                <td class="text-center">
+                                    <span class="@statusClass">@a.Remaining</span>
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       asp-controller="TrainingRequests"
+                                       asp-action="Index">Заявки</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="p-3 text-muted">Нет будущих назначений.</div>
+            }
+        </div>
+    </div>
+
+    <!-- Последние заявки -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-secondary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Последние заявки</h5>
+                <a class="btn btn-sm btn-light" asp-controller="TrainingRequests" asp-action="Index">Все заявки</a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.RecentRequests.Any())
+            {
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>№</th>
+                            <th>Организация</th>
+                            <th>Курс</th>
+                            <th>Преподаватель</th>
+                            <th>Даты</th>
+                            <th class="text-center">Людей</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.RecentRequests)
+                        {
+                            <tr>
+                                <td>@r.RequestId</td>
+                                <td>@r.OrgName</td>
+                                <td>@r.CourseName</td>
+                                <td>@r.TeacherName</td>
+                                <td>@r.StartDate.ToString("yyyy-MM-dd") — @r.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td class="text-center">@r.People</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       asp-controller="TrainingRequests"
+                                       asp-action="Details"
+                                       asp-route-id="@r.RequestId">Подробнее</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="p-3 text-muted">Заявок пока нет.</div>
+            }
+        </div>
+    </div>
+
+</div>

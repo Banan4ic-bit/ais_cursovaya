@@ -1,0 +1,107 @@
+﻿@model WebApplication1.Models.TrainingRequest
+
+@{
+    ViewData["Title"] = "Редактирование заявки";
+}
+
+<h2 class="text-primary mb-4">✏️ Редактирование заявки №@Model.RequestId</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="card shadow-sm p-4">
+    <form asp-action="Edit" class="needs-validation" novalidate>
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="RequestId" />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="OrgId" class="form-label fw-semibold">Организация</label>
+                <select asp-for="OrgId" class="form-select" asp-items="ViewBag.OrgId"></select>
+                <span asp-validation-for="OrgId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="CourseId" class="form-label fw-semibold">Курс</label>
+                <select asp-for="CourseId" class="form-select" asp-items="ViewBag.CourseId" id="courseSelect"></select>
+                <span asp-validation-for="CourseId" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label asp-for="RequestDate" class="form-label fw-semibold">Дата подачи заявки</label>
+                <input asp-for="RequestDate" type="date" class="form-control" readonly />
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="StartDate" class="form-label fw-semibold">Дата начала</label>
+                <input asp-for="StartDate" type="date" class="form-control" readonly />
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="EndDate" class="form-label fw-semibold">Дата окончания</label>
+                <input asp-for="EndDate" type="date" class="form-control" readonly />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NumberOfPeople" class="form-label fw-semibold">Количество участников</label>
+            <input asp-for="NumberOfPeople" type="number" min="1" class="form-control" id="peopleInput" />
+            <div id="capacityInfo" class="form-text text-muted"></div>
+            <span asp-validation-for="NumberOfPeople" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold shadow-sm">
+            💾 Сохранить изменения
+        </button>
+    </form>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">← Назад к списку заявок</a>
+</div>
+
+@section Scripts {
+    <script>
+        // Подгружаем информацию о вместимости при выборе курса
+        const courseSelect = document.getElementById("courseSelect");
+        const capacityInfo = document.getElementById("capacityInfo");
+        const peopleInput = document.getElementById("peopleInput");
+
+        courseSelect.addEventListener("change", function () {
+            const courseId = this.value;
+            if (!courseId) {
+                capacityInfo.innerHTML = "";
+                return;
+            }
+
+            fetch(`/TrainingRequests/GetAssignmentInfo?assignmentId=${@Model.AssignmentId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.capacity) {
+                        capacityInfo.innerHTML = `Вместимость: ${data.capacity}. Уже записано: ${data.totalEnrolled}. Осталось мест: ${data.remaining}.`;
+                    } else {
+                        capacityInfo.innerHTML = "Для этого курса вместимость не указана.";
+                    }
+                })
+                .catch(() => capacityInfo.innerHTML = "Не удалось загрузить данные о вместимости.");
+        });
+
+        // Подсказка по количеству мест при вводе
+        peopleInput.addEventListener("input", function () {
+            const val = parseInt(this.value);
+            if (val < 1) {
+                this.setCustomValidity("Количество участников должно быть не менее 1.");
+            } else {
+                this.setCustomValidity("");
+            }
+        });
+    </script>
+
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

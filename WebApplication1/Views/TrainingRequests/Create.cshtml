@@ -1,0 +1,128 @@
+﻿@model WebApplication1.Models.TrainingRequest
+
+@{
+    ViewData["Title"] = "Новая заявка на обучение";
+}
+
+<h1 class="mb-4 text-primary">Добавить заявку на обучение</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <!-- Организация -->
+            <div class="form-group mb-3">
+                <label asp-for="OrgId" class="form-label">Организация</label>
+                <select asp-for="OrgId" class="form-select" asp-items="ViewBag.OrgId"></select>
+                <span asp-validation-for="OrgId" class="text-danger"></span>
+            </div>
+
+            <!-- Курс -->
+            <div class="form-group mb-3">
+                <label asp-for="CourseId" class="form-label">Курс</label>
+                <select asp-for="CourseId" class="form-select" asp-items="ViewBag.CourseId" id="courseSelect">
+                    <option value="">-- выберите курс --</option>
+                </select>
+                <span asp-validation-for="CourseId" class="text-danger"></span>
+            </div>
+
+            <!-- Назначение (конкретная сессия) -->
+            <div class="form-group mb-3">
+                <label class="form-label">Выберите проведение курса</label>
+                <select asp-for="AssignmentId" class="form-select" id="assignmentSelect" disabled>
+                    <option value="">-- выберите после курса --</option>
+                </select>
+                <span asp-validation-for="AssignmentId" class="text-danger"></span>
+            </div>
+
+            <!-- Инфо о курсе -->
+            <div id="assignmentInfo" class="alert alert-info d-none"></div>
+
+            <!-- Количество участников -->
+            <div class="form-group mb-3">
+                <label asp-for="NumberOfPeople" class="form-label">Количество участников</label>
+                <input asp-for="NumberOfPeople" type="number" min="1" class="form-control" />
+                <span asp-validation-for="NumberOfPeople" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mt-3">Отправить заявку</button>
+        </form>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">← Назад к списку</a>
+</div>
+
+@section Scripts {
+    <script>
+        const courseSelect = document.getElementById("courseSelect");
+        const assignmentSelect = document.getElementById("assignmentSelect");
+        const infoDiv = document.getElementById("assignmentInfo");
+
+        // 1️⃣ При выборе курса загружаем назначения
+        courseSelect.addEventListener("change", function () {
+            const courseId = this.value;
+            assignmentSelect.innerHTML = '<option value="">-- выберите проведение курса --</option>';
+            assignmentSelect.disabled = true;
+            infoDiv.classList.add("d-none");
+
+            if (!courseId) return;
+
+            fetch(`/TrainingRequests/GetAssignmentsByCourse?courseId=${courseId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        infoDiv.classList.remove("d-none");
+                        infoDiv.classList.remove("alert-info");
+                        infoDiv.classList.add("alert-warning");
+                        infoDiv.innerHTML = data.message;
+                        return;
+                    }
+
+                    data.forEach(a => {
+                        const opt = document.createElement("option");
+                        opt.value = a.assignmentId;
+                        opt.text = `${a.startDate} – ${a.endDate} (${a.teacherName})`;
+                        assignmentSelect.appendChild(opt);
+                    });
+
+                    assignmentSelect.disabled = false;
+                })
+                .catch(err => console.error("Ошибка загрузки назначений:", err));
+        });
+
+        // 2️⃣ При выборе назначения загружаем подробности
+        assignmentSelect.addEventListener("change", function () {
+            const assignmentId = this.value;
+            if (!assignmentId) return;
+
+            fetch(`/TrainingRequests/GetAssignmentInfo?assignmentId=${assignmentId}`)
+                .then(res => res.json())
+                .then(data => {
+                    infoDiv.classList.remove("d-none");
+                    infoDiv.classList.remove("alert-warning");
+                    infoDiv.classList.add("alert-info");
+                    infoDiv.innerHTML = `
+                        <strong>Курс:</strong> ${data.course}<br>
+                        <strong>Преподаватель:</strong> ${data.teacher}<br>
+                        <strong>Даты:</strong> ${data.startDate} — ${data.endDate}<br>
+                        <strong>Дней обучения:</strong> ${data.days}<br>
+                        <strong>Вместимость:</strong> ${data.capacity ?? 'не указана'}<br>
+                        <strong>Уже записано:</strong> ${data.totalEnrolled}<br>
+                        <strong>Осталось мест:</strong> ${data.remaining}
+                    `;
+
+                    if (data.remaining <= 0) {
+                        infoDiv.classList.remove("alert-info");
+                        infoDiv.classList.add("alert-danger");
+                        infoDiv.innerHTML += "<br><strong>⚠️ Набор на курс закрыт!</strong>";
+                    }
+                })
+                .catch(err => console.error("Ошибка загрузки информации:", err));
+        });
+    </script>
+
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

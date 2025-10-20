@@ -1,0 +1,35 @@
+﻿@model WebApplication1.Models.Teacher
+
+@{
+    ViewData["Title"] = "Детали преподавателя";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3 text-center">🔍 Детали преподавателя</h2>
+    <hr />
+
+    <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+            <h4 class="card-title text-center mb-4">@Model.FullName</h4>
+
+            <dl class="row">
+                <dt class="col-sm-4">Дата рождения</dt>
+                <dd class="col-sm-8">@Model.Dob.ToString("dd.MM.yyyy")</dd>
+
+                <dt class="col-sm-4">Пол</dt>
+                <dd class="col-sm-8">@Model.Gender</dd>
+
+                <dt class="col-sm-4">Образование</dt>
+                <dd class="col-sm-8">@Model.Education</dd>
+
+                <dt class="col-sm-4">Категория</dt>
+                <dd class="col-sm-8">@Model.Category</dd>
+            </dl>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn btn-secondary">⬅ Назад к списку</a>
+                <a asp-action="Edit" asp-route-id="@Model.TeacherId" class="btn btn-warning">✏️ Редактировать</a>
+            </div>
+        </div>
+    </div>
+</div>

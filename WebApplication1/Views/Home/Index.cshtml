@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Расписание курсов";
+    var schedule = ViewBag.Schedule as IEnumerable<dynamic>;
+}
+
+<h1 class="mb-4 text-primary fw-bold">📅 Расписание курсов</h1>
+
+@if (schedule == null || !schedule.Any())
+{
+    <div class="alert alert-warning">Нет активных назначений курсов.</div>
+}
+else
+{
+    <div class="table-responsive shadow-sm rounded-4">
+        <table class="table table-hover align-middle table-striped mb-0">
+            <thead class="table-primary">
+                <tr>
+                    <th>Курс</th>
+                    <th>Преподаватель</th>
+                    <th>Дата начала</th>
+                    <th>Дата окончания</th>
+                    <th class="text-center">Вместимость</th>
+                    <th class="text-center">Записано</th>
+                    <th class="text-center">Осталось</th>
+                    <th class="text-center">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in schedule)
+                {
+                    <tr>
+                        <td>@item.CourseName</td>
+                        <td>@item.TeacherName</td>
+                        <td>@item.StartDate.ToString("dd.MM.yyyy")</td>
+                        <td>@item.EndDate.ToString("dd.MM.yyyy")</td>
+                        <td class="text-center">@item.Capacity</td>
+                        <td class="text-center">@item.TotalEnrolled</td>
+                        <td class="text-center">
+                            @if (item.Remaining > 0)
+                            {
+                                <span class="badge bg-success">@item.Remaining</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Заполнен</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (item.Remaining > 0)
+                            {
+                                <a asp-controller="TrainingRequests"
+                                   asp-action="Create"
+                                   asp-route-courseId="@item.CourseId"
+                                   asp-route-assignmentId="@item.AssignmentId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    ✍ Подать заявку
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

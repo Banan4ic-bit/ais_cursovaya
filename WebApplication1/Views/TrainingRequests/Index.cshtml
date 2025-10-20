@@ -1,0 +1,68 @@
+﻿@model IEnumerable<WebApplication1.Models.TrainingRequest>
+
+@{
+    ViewData["Title"] = "Заявки на обучение";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold text-primary">📋 Заявки на обучение</h2>
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            + Новая заявка
+        </a>
+    </div>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert">
+            <strong>✅</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Организация</th>
+                        <th>Курс</th>
+                        <th>Преподаватель</th>
+                        <th>Дата начала</th>
+                        <th>Дата окончания</th>
+                        <th>Количество людей</th>
+                        <th>Дата заявки</th>
+                        <th class="text-center" style="width: 180px;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Org?.Name</td>
+                            <td>@item.Course?.Name</td>
+                            <td>@item.Assignment?.Teacher?.FullName</td>
+                            <td>@item.StartDate.ToString("yyyy-MM-dd")</td>
+                            <td>@item.EndDate.ToString("yyyy-MM-dd")</td>
+                            <td>@item.NumberOfPeople</td>
+                            <td>@item.RequestDate.ToString("yyyy-MM-dd")</td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Edit" asp-route-id="@item.RequestId" class="btn btn-outline-primary">Изменить</a>
+                                    <a asp-action="Details" asp-route-id="@item.RequestId" class="btn btn-outline-secondary">Подробнее</a>
+                                    <a asp-action="Delete" asp-route-id="@item.RequestId" class="btn btn-outline-danger">Удалить</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning mt-3 text-center">
+        Пока нет заявок на обучение.
+    </div>
+}
