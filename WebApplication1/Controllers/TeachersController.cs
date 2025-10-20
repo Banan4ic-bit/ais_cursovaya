@@ -144,7 +144,7 @@ namespace WebApplication1.Controllers
             return View(teacher);
         }
 
-        // POST: Teachers/Delete/5
+        // POST: Teachers/Delete/5 TEST
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -176,4 +176,5 @@ namespace WebApplication1.Controllers
             return _context.Teachers.Any(e => e.TeacherId == id);
         }
     }
+    
 }
