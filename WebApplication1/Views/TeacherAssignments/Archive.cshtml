@@ -1,0 +1,54 @@
+﻿@model IEnumerable<WebApplication1.Models.TeacherAssignment>
+
+@{
+    ViewData["Title"] = "Архив назначений преподавателей";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-secondary fw-bold">🕒 Архив назначений преподавателей</h2>
+        <a asp-action="Index" class="btn btn-outline-primary">
+            ← Назад к актуальным
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Нет завершённых назначений.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded-3">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Курс</th>
+                        <th>Преподаватель</th>
+                        <th>Дата начала</th>
+                        <th>Дата окончания</th>
+                        <th class="text-center">Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Course.Name</td>
+                            <td>@item.Teacher.FullName</td>
+                            <td>@item.StartDate.ToString("dd.MM.yyyy")</td>
+                            <td>@item.EndDate.ToString("dd.MM.yyyy")</td>
+                            <td class="text-center">
+                                <a asp-action="Details" asp-route-id="@item.AssignmentId"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    Подробнее
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

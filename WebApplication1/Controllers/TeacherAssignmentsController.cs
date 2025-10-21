@@ -17,15 +17,34 @@ namespace WebApplication1.Controllers
             _context = context;
         }
 
-        // ===================== INDEX =====================
+        // ===================== INDEX (Актуальные назначения) =====================
         public async Task<IActionResult> Index()
         {
-            var assignments = _context.TeacherAssignments
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            var assignments = await _context.TeacherAssignments
                 .Include(t => t.Course)
                 .Include(t => t.Teacher)
-                .OrderBy(t => t.StartDate);
+                .Where(t => t.EndDate >= today)
+                .OrderBy(t => t.StartDate)
+                .ToListAsync();
 
-            return View(await assignments.ToListAsync());
+            return View(assignments);
+        }
+
+        // ===================== ARCHIVE (Прошедшие назначения) =====================
+        public async Task<IActionResult> Archive()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            var pastAssignments = await _context.TeacherAssignments
+                .Include(a => a.Course)
+                .Include(a => a.Teacher)
+                .Where(a => a.EndDate < today)
+                .OrderByDescending(a => a.EndDate)
+                .ToListAsync();
+
+            return View(pastAssignments);
         }
 
         // ===================== DETAILS =====================
@@ -46,122 +65,107 @@ namespace WebApplication1.Controllers
         // ===================== CREATE (GET) =====================
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "Name");
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "TeacherId", "FullName");
+            Console.WriteLine($"Courses available: {_context.Courses.Count(c => !c.IsArchived)}");
+            Console.WriteLine($"Teachers available: {_context.Teachers.Count(t => !t.IsArchived)}");
+
+            if (!_context.Courses.Any(c => !c.IsArchived) || !_context.Teachers.Any(t => !t.IsArchived))
+            {
+                TempData["ErrorMessage"] = "Нет активных курсов или преподавателей для назначения.";
+                Console.WriteLine("⚠️ Нет активных курсов или преподавателей для назначения.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewData["CourseId"] = new SelectList(
+                _context.Courses.Where(c => !c.IsArchived).OrderBy(c => c.Name),
+                "CourseId", "Name"
+            );
+
+            ViewData["TeacherId"] = new SelectList(
+                _context.Teachers.Where(t => !t.IsArchived).OrderBy(t => t.FullName),
+                "TeacherId", "FullName"
+            );
+
             return View();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCourseDays(int id)
+        {
+            var course = await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == id);
+            if (course == null)
+                return Json(0); // если курс не найден
+
+            return Json(course.Days); // возвращаем количество дней
+        }
+
 
         // ===================== CREATE (POST) =====================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AssignmentId,CourseId,TeacherId,StartDate,EndDate")] TeacherAssignment assignment)
+        public async Task<IActionResult> Create([Bind("AssignmentId,CourseId,TeacherId,StartDate")] TeacherAssignment assignment)
         {
-            // Проверка корректности дат
-            if (assignment.EndDate < assignment.StartDate)
+            Console.WriteLine("=== ▶ CREATE TeacherAssignment ===");
+            Console.WriteLine($"CourseId={assignment.CourseId}, TeacherId={assignment.TeacherId}, Start={assignment.StartDate}");
+
+            if (assignment.CourseId == 0)
             {
-                ModelState.AddModelError("", "Дата окончания не может быть раньше даты начала.");
+                ModelState.AddModelError("", "Не выбран курс.");
+                Console.WriteLine("⚠️ Ошибка: не выбран курс");
+            }
+            if (assignment.TeacherId == 0)
+            {
+                ModelState.AddModelError("", "Не выбран преподаватель.");
+                Console.WriteLine("⚠️ Ошибка: не выбран преподаватель");
             }
 
-            // Проверка на пересечение назначений для того же преподавателя
-            var overlap = await _context.TeacherAssignments.AnyAsync(a =>
-                a.TeacherId == assignment.TeacherId &&
-                ((assignment.StartDate >= a.StartDate && assignment.StartDate <= a.EndDate) ||
-                 (assignment.EndDate >= a.StartDate && assignment.EndDate <= a.EndDate)));
-
-            if (overlap)
+            if (assignment.StartDate == default)
             {
-                ModelState.AddModelError("", "Этот преподаватель уже назначен на другой курс в указанный период.");
-            }
-
-            if (ModelState.IsValid)
-            {
-                _context.Add(assignment);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Назначение преподавателя успешно добавлено.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "Name", assignment.CourseId);
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "TeacherId", "FullName", assignment.TeacherId);
-            return View(assignment);
-        }
-
-        // ===================== EDIT (GET) =====================
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var assignment = await _context.TeacherAssignments.FindAsync(id);
-            if (assignment == null) return NotFound();
-
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "Name", assignment.CourseId);
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "TeacherId", "FullName", assignment.TeacherId);
-            return View(assignment);
-        }
-
-        // ===================== EDIT (POST) =====================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AssignmentId,CourseId,TeacherId,StartDate,EndDate")] TeacherAssignment assignment)
-        {
-            if (id != assignment.AssignmentId) return NotFound();
-
-            if (assignment.EndDate < assignment.StartDate)
-            {
-                ModelState.AddModelError("", "Дата окончания не может быть раньше даты начала.");
+                ModelState.AddModelError("", "Дата начала обязательна.");
+                Console.WriteLine("⚠️ Ошибка: не указана дата начала");
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(assignment);
+                    var course = await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == assignment.CourseId);
+                    if (course != null)
+                    {
+                        assignment.EndDate = assignment.StartDate.AddDays(course.Days - 1);
+                        Console.WriteLine($"📅 Автоматически установлен EndDate = {assignment.EndDate}");
+                    }
+
+                    _context.Add(assignment);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Изменения успешно сохранены.";
+
+                    TempData["SuccessMessage"] = "Назначение преподавателя успешно добавлено.";
+                    Console.WriteLine("✅ Назначение успешно сохранено.");
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception ex)
                 {
-                    if (!TeacherAssignmentExists(assignment.AssignmentId))
-                        return NotFound();
-                    else
-                        throw;
+                    Console.WriteLine($"💥 Ошибка при сохранении: {ex.Message}");
+                    ModelState.AddModelError("", "Ошибка при сохранении данных.");
                 }
-                return RedirectToAction(nameof(Index));
             }
-
-            ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "Name", assignment.CourseId);
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "TeacherId", "FullName", assignment.TeacherId);
-            return View(assignment);
-        }
-
-        // ===================== DELETE (GET) =====================
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var assignment = await _context.TeacherAssignments
-                .Include(t => t.Course)
-                .Include(t => t.Teacher)
-                .FirstOrDefaultAsync(m => m.AssignmentId == id);
-
-            if (assignment == null) return NotFound();
-
-            return View(assignment);
-        }
-
-        // ===================== DELETE (POST) =====================
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var assignment = await _context.TeacherAssignments.FindAsync(id);
-            if (assignment != null)
+            else
             {
-                _context.TeacherAssignments.Remove(assignment);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Назначение успешно удалено.";
+                Console.WriteLine("❌ ModelState INVALID:");
+                foreach (var e in ModelState)
+                {
+                    foreach (var err in e.Value.Errors)
+                        Console.WriteLine($"   → {e.Key}: {err.ErrorMessage}");
+                }
             }
-            return RedirectToAction(nameof(Index));
+
+            ViewData["CourseId"] = new SelectList(
+                _context.Courses.Where(c => !c.IsArchived), "CourseId", "Name", assignment.CourseId
+            );
+            ViewData["TeacherId"] = new SelectList(
+                _context.Teachers.Where(t => !t.IsArchived), "TeacherId", "FullName", assignment.TeacherId
+            );
+
+            return View(assignment);
         }
 
         private bool TeacherAssignmentExists(int id)

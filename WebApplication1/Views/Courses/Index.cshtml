@@ -5,53 +5,96 @@
 }
 
 <div class="container mt-4">
-    <h2 class="mb-3 text-center">📚 Список курсов</h2>
+    <h1 class="text-primary mb-4 text-center">📚 Активные курсы</h1>
 
+    <!-- Уведомления -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             @TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="mb-3 text-end">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Верхняя панель -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <a asp-action="Create" class="btn btn-primary">
             ➕ Добавить курс
         </a>
+        <a asp-action="Archive" class="btn btn-outline-secondary">
+            📦 Архив курсов
+        </a>
     </div>
 
-    <table class="table table-hover align-middle shadow-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Название</th>
-                <th>Тип</th>
-                <th>Длительность (дни)</th>
-                <th>Вместимость</th>
-                <th>Цена</th>
-                <th>Цена с НДС</th>
-                <th class="text-center">Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var course in Model)
-            {
-                <tr>
-                    <td>@course.CourseId</td>
-                    <td>@course.Name</td>
-                    <td>@course.Type</td>
-                    <td>@course.Days</td>
-                    <td>@course.Capacity</td>
-                    <td>@course.Price.ToString("C")</td>
-                    <td>@course.PriceWithVat.ToString("C")</td>
-                    <td class="text-center">
-                        <a asp-action="Edit" asp-route-id="@course.CourseId" class="btn btn-sm btn-warning me-1">✏️</a>
-                        <a asp-action="Details" asp-route-id="@course.CourseId" class="btn btn-sm btn-info me-1">🔍</a>
-                        <a asp-action="Delete" asp-route-id="@course.CourseId" class="btn btn-sm btn-danger" onclick="return confirm('Удалить курс «@course.Name»?');">🗑️</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center shadow-sm">
+            Курсы отсутствуют.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Текущие активные курсы</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Тип</th>
+                                <th class="text-center">Длительность (дни)</th>
+                                <th class="text-center">Вместимость</th>
+                                <th class="text-center">Цена</th>
+                                <th class="text-center">Цена с НДС</th>
+                                <th class="text-center">Статус</th>
+                                <th class="text-end">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var course in Model)
+                            {
+                                <tr>
+                                    <td>@course.CourseId</td>
+                                    <td>@course.Name</td>
+                                    <td>@course.Type</td>
+                                    <td class="text-center">@course.Days</td>
+                                    <td class="text-center">@(course.Capacity ?? 0)</td>
+                                    <td class="text-center">@course.Price.ToString("C")</td>
+                                    <td class="text-center">@course.PriceWithVat.ToString("C")</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">Активен</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-action="Edit" asp-route-id="@course.CourseId" class="btn btn-sm btn-outline-warning me-1">
+                                            ✏️ Редактировать
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@course.CourseId" class="btn btn-sm btn-outline-info me-1">
+                                            🔍 Подробнее
+                                        </a>
+                                        <form asp-action="ArchiveCourse" asp-route-id="@course.CourseId" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" onclick="return confirm('Переместить курс «@course.Name» в архив?');">
+                                                📦 В архив
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
 </div>

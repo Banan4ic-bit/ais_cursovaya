@@ -262,3 +262,4 @@ C:\Users\lords\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\ref
 C:\Users\lords\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\WebApplication1.pdb
 C:\Users\lords\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\WebApplication1.genruntimeconfig.cache
 C:\Users\lords\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\ref\WebApplication1.dll
+C:\Users\lords\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\WebApplication1.sourcelink.json

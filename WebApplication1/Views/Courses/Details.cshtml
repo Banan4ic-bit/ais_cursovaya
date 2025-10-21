@@ -4,37 +4,65 @@
     ViewData["Title"] = "Детали курса";
 }
 
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">Информация о курсе</h4>
-    </div>
-    <div class="card-body">
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Название курса</dt>
-            <dd class="col-sm-9">@Model.Name</dd>
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">📘 Детали курса</h4>
+            @if (Model.IsArchived)
+            {
+                <span class="badge bg-secondary fs-6">Архивирован</span>
+            }
+            else
+            {
+                <span class="badge bg-success fs-6">Активен</span>
+            }
+        </div>
 
-            <dt class="col-sm-3">Тип</dt>
-            <dd class="col-sm-9">@Model.Type</dd>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4 col-md-3">Название курса:</dt>
+                <dd class="col-sm-8 col-md-9 fw-semibold">@Model.Name</dd>
 
-            <dt class="col-sm-3">Длительность (дней)</dt>
-            <dd class="col-sm-9">@Model.Days</dd>
+                <dt class="col-sm-4 col-md-3">Тип:</dt>
+                <dd class="col-sm-8 col-md-9">@Model.Type</dd>
 
-            <dt class="col-sm-3">Вместимость</dt>
-            <dd class="col-sm-9">@Model.Capacity</dd>
+                <dt class="col-sm-4 col-md-3">Длительность (дней):</dt>
+                <dd class="col-sm-8 col-md-9">@Model.Days</dd>
 
-            <dt class="col-sm-3">Цена (без НДС)</dt>
-            <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+                <dt class="col-sm-4 col-md-3">Вместимость:</dt>
+                <dd class="col-sm-8 col-md-9">@(Model.Capacity ?? 0)</dd>
 
-            <dt class="col-sm-3">Цена (с НДС)</dt>
-            <dd class="col-sm-9">@Model.PriceWithVat.ToString("C")</dd>
-        </dl>
-    </div>
-    <div class="card-footer text-end">
-        <a asp-action="Edit" asp-route-id="@Model.CourseId" class="btn btn-warning me-2">
-            <i class="bi bi-pencil-square"></i> Редактировать
-        </a>
-        <a asp-action="Index" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Назад к списку
-        </a>
+                <dt class="col-sm-4 col-md-3">Цена (без НДС):</dt>
+                <dd class="col-sm-8 col-md-9 text-success fw-semibold">@Model.Price.ToString("C")</dd>
+
+                <dt class="col-sm-4 col-md-3">Цена (с НДС):</dt>
+                <dd class="col-sm-8 col-md-9 text-success fw-semibold">@Model.PriceWithVat.ToString("C")</dd>
+            </dl>
+        </div>
+
+        <div class="card-footer text-end">
+            <a asp-action="Edit" asp-route-id="@Model.CourseId" class="btn btn-warning me-2">
+                ✏️ Редактировать
+            </a>
+
+            @if (Model.IsArchived)
+            {
+                <form asp-action="RestoreCourse" asp-route-id="@Model.CourseId" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-success me-2">🔄 Восстановить</button>
+                </form>
+            }
+            else
+            {
+                <form asp-action="ArchiveCourse" asp-route-id="@Model.CourseId" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-secondary me-2" onclick="return confirm('Переместить курс «@Model.Name» в архив?');">
+                        📦 В архив
+                    </button>
+                </form>
+            }
+
+            <a asp-action="Index" class="btn btn-secondary">
+                ⬅ Назад к списку
+            </a>
+        </div>
     </div>
 </div>

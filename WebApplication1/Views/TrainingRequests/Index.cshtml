@@ -1,68 +1,76 @@
 ﻿@model IEnumerable<WebApplication1.Models.TrainingRequest>
-
 @{
     ViewData["Title"] = "Заявки на обучение";
+    bool showAll = ViewBag.ShowAll ?? false;
 }
 
 <div class="container mt-4">
+    <h1 class="text-primary mb-4">📋 Заявки на обучение</h1>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold text-primary">📋 Заявки на обучение</h2>
-        <a asp-action="Create" class="btn btn-success shadow-sm">
-            + Новая заявка
+        <div>
+            @if (showAll)
+            {
+                <a asp-action="Index" class="btn btn-outline-primary">
+                    🔹 Показать только актуальные
+                </a>
+            }
+            else
+            {
+                <a asp-action="Index" asp-route-showAll="true" class="btn btn-outline-secondary">
+                    📅 Показать все заявки
+                </a>
+            }
+        </div>
+
+        <a asp-action="Create" class="btn btn-success">
+            ➕ Подать новую заявку
         </a>
     </div>
-    @if (TempData["SuccessMessage"] != null)
+
+    @if (!Model.Any())
     {
-        <div id="successAlert" class="alert alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert">
-            <strong>✅</strong> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-warning shadow-sm">
+            Заявок пока нет.
         </div>
     }
-
-    <div class="card shadow-sm rounded-4">
-        <div class="card-body p-0">
-            <table class="table table-hover table-striped align-middle mb-0">
-                <thead class="table-primary">
+    else
+    {
+        <div class="table-responsive shadow-sm rounded-4">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-light">
                     <tr>
+                        <th>№</th>
                         <th>Организация</th>
                         <th>Курс</th>
                         <th>Преподаватель</th>
-                        <th>Дата начала</th>
-                        <th>Дата окончания</th>
-                        <th>Количество людей</th>
-                        <th>Дата заявки</th>
-                        <th class="text-center" style="width: 180px;">Действия</th>
+                        <th>Даты</th>
+                        <th class="text-center">Количество участников</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @foreach (var r in Model)
                     {
-                        <tr>
-                            <td>@item.Org?.Name</td>
-                            <td>@item.Course?.Name</td>
-                            <td>@item.Assignment?.Teacher?.FullName</td>
-                            <td>@item.StartDate.ToString("yyyy-MM-dd")</td>
-                            <td>@item.EndDate.ToString("yyyy-MM-dd")</td>
-                            <td>@item.NumberOfPeople</td>
-                            <td>@item.RequestDate.ToString("yyyy-MM-dd")</td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a asp-action="Edit" asp-route-id="@item.RequestId" class="btn btn-outline-primary">Изменить</a>
-                                    <a asp-action="Details" asp-route-id="@item.RequestId" class="btn btn-outline-secondary">Подробнее</a>
-                                    <a asp-action="Delete" asp-route-id="@item.RequestId" class="btn btn-outline-danger">Удалить</a>
-                                </div>
+                        var isPast = r.EndDate < DateOnly.FromDateTime(DateTime.Today);
+                        var rowClass = isPast ? "table-secondary" : "";
+                        <tr class="@rowClass">
+                            <td>@r.RequestId</td>
+                            <td>@r.Org.Name</td>
+                            <td>@r.Course.Name</td>
+                            <td>@r.Assignment.Teacher.FullName</td>
+                            <td>@r.StartDate.ToString("dd.MM.yyyy") — @r.EndDate.ToString("dd.MM.yyyy")</td>
+                            <td class="text-center">@r.NumberOfPeople</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@r.RequestId"
+                                   class="btn btn-sm btn-outline-primary">Подробнее</a>
+                                <a asp-action="Edit" asp-route-id="@r.RequestId"
+                                   class="btn btn-sm btn-outline-secondary ms-1">Изменить</a>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-    </div>
+    }
 </div>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-warning mt-3 text-center">
-        Пока нет заявок на обучение.
-    </div>
-}

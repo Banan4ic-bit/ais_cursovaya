@@ -1,53 +1,59 @@
 ﻿@model IEnumerable<WebApplication1.Models.TeacherAssignment>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Назначения преподавателей";
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
+    <h1 class="text-primary mb-4 text-center">📅 Назначения преподавателей</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.StartDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EndDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Course)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Teacher)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EndDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Course.CourseId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Teacher.TeacherId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.AssignmentId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.AssignmentId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.AssignmentId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="d-flex justify-content-between mb-3">
+        <a asp-action="Create" class="btn btn-success">
+            ➕ Добавить назначение
+        </a>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">
+            ← Назад в панель администратора
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <table class="table table-hover align-middle shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Курс</th>
+                    <th>Преподаватель</th>
+                    <th class="text-center">Начало</th>
+                    <th class="text-center">Окончание</th>
+                    <th class="text-center">Продолжительность (дней)</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var days = (item.EndDate.ToDateTime(TimeOnly.MinValue) - item.StartDate.ToDateTime(TimeOnly.MinValue)).Days + 1;
+                    <tr>
+                        <td>@item.Course?.Name</td>
+                        <td>@item.Teacher?.FullName</td>
+                        <td class="text-center">@item.StartDate.ToString("yyyy-MM-dd")</td>
+                        <td class="text-center">@item.EndDate.ToString("yyyy-MM-dd")</td>
+                        <td class="text-center">@days</td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-primary me-1">✏️ Редактировать</a>
+                            <a asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-secondary me-1">🔍 Подробнее</a>
+                            <a asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Удалить назначение курса @item.Course?.Name?');">🗑 Удалить</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-info text-center shadow-sm">
+            Пока нет назначений преподавателей.
+        </div>
+    }
+</div>

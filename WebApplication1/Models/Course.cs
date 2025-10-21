@@ -35,6 +35,10 @@ public partial class Course
     [Precision(10, 2)]
     public decimal PriceWithVat { get; set; }
 
+    // 🔹 Новое поле для архивирования курсов
+    [Column("is_archived")]
+    public bool IsArchived { get; set; } = false;
+
     [InverseProperty("Course")]
     public virtual ICollection<CoursePriceChange> CoursePriceChanges { get; set; } = new List<CoursePriceChange>();
 

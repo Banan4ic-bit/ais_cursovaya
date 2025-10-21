@@ -36,6 +36,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUGFzdENvdXJzZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/lords/source/repos/WebApplication1/WebApplication1/Views/Courses/Archive.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlc1xBcmNoaXZlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/lords/source/repos/WebApplication1/WebApplication1/Views/Courses/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291cnNlc1xDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -112,6 +116,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/lords/source/repos/WebApplication1/WebApplication1/Views/TeacherAssignments/Archive.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlckFzc2lnbm1lbnRzXEFyY2hpdmUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/lords/source/repos/WebApplication1/WebApplication1/Views/TeacherAssignments/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlckFzc2lnbm1lbnRzXENyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -130,6 +138,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/lords/source/repos/WebApplication1/WebApplication1/Views/TeacherAssignments/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlckFzc2lnbm1lbnRzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/lords/source/repos/WebApplication1/WebApplication1/Views/Teachers/Archive.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlcnNcQXJjaGl2ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/lords/source/repos/WebApplication1/WebApplication1/Views/Teachers/Create.cshtml]

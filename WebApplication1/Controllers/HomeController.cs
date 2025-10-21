@@ -16,17 +16,20 @@ namespace WebApplication1.Controllers
             _context = context;
         }
 
-        // 🗓 Главная страница — расписание курсов
+        // 🗓 Главная страница — актуальные курсы
         public async Task<IActionResult> Index()
         {
-            // Загружаем все активные назначения (курсы с преподавателями)
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            // ✅ Загружаем только активные или будущие назначения
             var assignments = await _context.TeacherAssignments
                 .Include(a => a.Course)
                 .Include(a => a.Teacher)
+                .Where(a => a.EndDate >= today)
                 .OrderBy(a => a.StartDate)
                 .ToListAsync();
 
-            // Формируем модель с данными по заполненности
+            // Формируем список расписания с данными по заполненности
             var schedule = assignments.Select(a =>
             {
                 var totalEnrolled = _context.TrainingRequests

@@ -17,9 +17,27 @@ namespace WebApplication1.Controllers
         }
 
         // ------------------ INDEX ------------------
+        // Показывает только активные (неархивные) курсы
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Courses.ToListAsync());
+            var activeCourses = await _context.Courses
+                .Where(c => !c.IsArchived)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return View(activeCourses);
+        }
+
+        // ------------------ ARCHIVE VIEW ------------------
+        // Просмотр архивных курсов
+        public async Task<IActionResult> Archive()
+        {
+            var archivedCourses = await _context.Courses
+                .Where(c => c.IsArchived)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return View(archivedCourses);
         }
 
         // ------------------ DETAILS ------------------
@@ -62,7 +80,7 @@ namespace WebApplication1.Controllers
                     TempData["SuccessMessage"] = $"Курс «{course.Name}» успешно добавлен.";
                     return RedirectToAction(nameof(Index));
                 }
-                catch (Exception)
+                catch
                 {
                     TempData["ErrorMessage"] = "Ошибка при добавлении курса.";
                 }
@@ -92,7 +110,7 @@ namespace WebApplication1.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Name,Type,Days,Capacity,Price")] Course course)
+        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Name,Type,Days,Capacity,Price,IsArchived")] Course course)
         {
             if (id != course.CourseId)
             {
@@ -123,13 +141,51 @@ namespace WebApplication1.Controllers
                         throw;
                     }
                 }
-                catch (Exception)
+                catch
                 {
                     TempData["ErrorMessage"] = "Ошибка при сохранении изменений.";
                 }
             }
 
             return View(course);
+        }
+
+        // ------------------ ARCHIVE ACTION ------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ArchiveCourse(int id)
+        {
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "Курс не найден.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            course.IsArchived = true;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Курс «{course.Name}» перенесён в архив.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ------------------ RESTORE ACTION ------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestoreCourse(int id)
+        {
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "Курс не найден.";
+                return RedirectToAction(nameof(Archive));
+            }
+
+            course.IsArchived = false;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Курс «{course.Name}» восстановлен из архива.";
+            return RedirectToAction(nameof(Archive));
         }
 
         // ------------------ DELETE ------------------
@@ -162,16 +218,19 @@ namespace WebApplication1.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            try
+            // Проверка: есть ли активные заявки или назначения
+            bool hasAssignments = await _context.TeacherAssignments.AnyAsync(a => a.CourseId == id);
+            bool hasRequests = await _context.TrainingRequests.AnyAsync(r => r.CourseId == id);
+
+            if (hasAssignments || hasRequests)
             {
-                _context.Courses.Remove(course);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Курс «{course.Name}» успешно удалён.";
+                TempData["ErrorMessage"] = "Нельзя удалить курс, так как он используется в заявках или назначениях.";
+                return RedirectToAction(nameof(Index));
             }
-            catch (Exception)
-            {
-                TempData["ErrorMessage"] = "Ошибка при удалении курса.";
-            }
+
+            _context.Courses.Remove(course);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = $"Курс «{course.Name}» успешно удалён.";
 
             return RedirectToAction(nameof(Index));
         }

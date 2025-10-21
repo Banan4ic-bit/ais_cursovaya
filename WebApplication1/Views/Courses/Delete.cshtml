@@ -4,41 +4,58 @@
     ViewData["Title"] = "Удаление курса";
 }
 
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-danger text-white">
-        <h4 class="mb-0">Удалить курс</h4>
-    </div>
-    <div class="card-body">
-        <h5 class="text-danger mb-3">Вы уверены, что хотите удалить этот курс?</h5>
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Название курса</dt>
-            <dd class="col-sm-9">@Model.Name</dd>
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">⚠️ Подтверждение удаления курса</h4>
+            @if (Model.IsArchived)
+            {
+                <span class="badge bg-secondary">Архивирован</span>
+            }
+            else
+            {
+                <span class="badge bg-success">Активен</span>
+            }
+        </div>
 
-            <dt class="col-sm-3">Тип</dt>
-            <dd class="col-sm-9">@Model.Type</dd>
+        <div class="card-body">
+            <div class="alert alert-danger shadow-sm">
+                <strong>Внимание!</strong> Это действие нельзя отменить.
+                <br />
+                Убедитесь, что курс не используется в назначениях преподавателей или заявках.
+            </div>
 
-            <dt class="col-sm-3">Длительность (дней)</dt>
-            <dd class="col-sm-9">@Model.Days</dd>
+            <dl class="row">
+                <dt class="col-sm-4 col-md-3">Название курса:</dt>
+                <dd class="col-sm-8 col-md-9 fw-semibold">@Model.Name</dd>
 
-            <dt class="col-sm-3">Вместимость</dt>
-            <dd class="col-sm-9">@Model.Capacity</dd>
+                <dt class="col-sm-4 col-md-3">Тип:</dt>
+                <dd class="col-sm-8 col-md-9">@Model.Type</dd>
 
-            <dt class="col-sm-3">Цена (без НДС)</dt>
-            <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+                <dt class="col-sm-4 col-md-3">Длительность (дней):</dt>
+                <dd class="col-sm-8 col-md-9">@Model.Days</dd>
 
-            <dt class="col-sm-3">Цена (с НДС)</dt>
-            <dd class="col-sm-9">@Model.PriceWithVat.ToString("C")</dd>
-        </dl>
-    </div>
-    <div class="card-footer text-end">
-        <form asp-action="Delete" class="d-inline">
-            <input type="hidden" asp-for="CourseId" />
-            <button type="submit" class="btn btn-danger me-2">
-                <i class="bi bi-trash"></i> Удалить
-            </button>
-        </form>
-        <a asp-action="Index" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Назад к списку
-        </a>
+                <dt class="col-sm-4 col-md-3">Вместимость:</dt>
+                <dd class="col-sm-8 col-md-9">@(Model.Capacity ?? 0)</dd>
+
+                <dt class="col-sm-4 col-md-3">Цена (без НДС):</dt>
+                <dd class="col-sm-8 col-md-9 text-success">@Model.Price.ToString("C")</dd>
+
+                <dt class="col-sm-4 col-md-3">Цена (с НДС):</dt>
+                <dd class="col-sm-8 col-md-9 text-success">@Model.PriceWithVat.ToString("C")</dd>
+            </dl>
+        </div>
+
+        <div class="card-footer text-end">
+            <form asp-action="Delete" method="post" class="d-inline">
+                <input type="hidden" asp-for="CourseId" />
+                <button type="submit" class="btn btn-danger me-2" onclick="return confirm('Вы уверены, что хотите удалить курс «@Model.Name»?');">
+                    🗑️ Удалить
+                </button>
+            </form>
+            <a asp-action="Index" class="btn btn-secondary">
+                ⬅ Назад к списку
+            </a>
+        </div>
     </div>
 </div>

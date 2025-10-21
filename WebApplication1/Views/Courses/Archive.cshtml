@@ -1,0 +1,68 @@
+﻿@model IEnumerable<WebApplication1.Models.Course>
+@{
+    ViewData["Title"] = "Архив курсов";
+}
+
+<div class="container mt-4">
+    <h1 class="text-primary mb-4 text-center">📦 Архив курсов</h1>
+
+    <div class="mb-3 text-center">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            ⬅ Назад к активным курсам
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center shadow-sm">
+            Архив пуст — все курсы активны.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Список архивных курсов</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Название</th>
+                                <th>Тип</th>
+                                <th class="text-center">Длительность (дней)</th>
+                                <th class="text-center">Вместимость</th>
+                                <th class="text-center">Цена (с НДС)</th>
+                                <th class="text-center">Статус</th>
+                                <th class="text-end">Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var course in Model)
+                            {
+                                <tr>
+                                    <td>@course.Name</td>
+                                    <td>@course.Type</td>
+                                    <td class="text-center">@course.Days</td>
+                                    <td class="text-center">@(course.Capacity ?? 0)</td>
+                                    <td class="text-center">@course.PriceWithVat.ToString("C")</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">Архивирован</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <form asp-action="RestoreCourse" asp-route-id="@course.CourseId" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                🔄 Восстановить
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>

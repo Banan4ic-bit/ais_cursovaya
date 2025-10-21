@@ -32,6 +32,10 @@ public partial class Teacher
     [StringLength(50)]
     public string Category { get; set; } = null!;
 
+    [Column("is_archived")]
+    public bool IsArchived { get; set; } = false;
+
+
     [InverseProperty("Teacher")]
     public virtual ICollection<TeacherAssignment> TeacherAssignments { get; set; } = new List<TeacherAssignment>();
 }

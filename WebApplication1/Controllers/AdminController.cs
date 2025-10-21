@@ -29,7 +29,7 @@ namespace WebApplication1.Controllers
 
             var today = DateOnly.FromDateTime(DateTime.Today);
 
-            // ближайшие курсы
+            // ======= Ближайшие курсы =======
             var assignments = await _context.TeacherAssignments
                 .Include(a => a.Course)
                 .Include(a => a.Teacher)
@@ -60,14 +60,17 @@ namespace WebApplication1.Controllers
                 });
             }
 
-            // последние заявки
+            // ======= Последние заявки (за последние 30 дней) =======
+            var monthAgo = DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
+
             vm.RecentRequests = await _context.TrainingRequests
                 .Include(r => r.Org)
                 .Include(r => r.Course)
                 .Include(r => r.Assignment)
                     .ThenInclude(a => a.Teacher)
-                .OrderByDescending(r => r.RequestId)
-                .Take(7)
+                .Where(r => r.RequestDate != null && r.RequestDate >= monthAgo)
+                .OrderByDescending(r => r.RequestDate)
+                .Take(10)
                 .Select(r => new AdminDashboardVm.RecentRequestRow
                 {
                     RequestId = r.RequestId,

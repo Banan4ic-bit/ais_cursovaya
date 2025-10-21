@@ -19,15 +19,29 @@ namespace WebApplication1.Controllers
         }
 
         // ======== INDEX ========
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool showAll = false)
         {
-            var requests = _context.TrainingRequests
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            var requestsQuery = _context.TrainingRequests
                 .Include(r => r.Course)
                 .Include(r => r.Org)
                 .Include(r => r.Assignment)
-                    .ThenInclude(a => a.Teacher);
+                    .ThenInclude(a => a.Teacher)
+                .AsQueryable();
 
-            return View(await requests.ToListAsync());
+            // показываем только актуальные заявки
+            if (!showAll)
+            {
+                requestsQuery = requestsQuery.Where(r => r.EndDate >= today);
+            }
+
+            var requests = await requestsQuery
+                .OrderBy(r => r.StartDate)
+                .ToListAsync();
+
+            ViewBag.ShowAll = showAll;
+            return View(requests);
         }
 
         // ======== AJAX: получить список назначений курса ========
@@ -114,15 +128,12 @@ namespace WebApplication1.Controllers
             return View(request);
         }
 
-
-
-
         // ======== CREATE GET ========
         public IActionResult Create()
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
 
-            // Показываем только курсы, у которых есть активные или будущие назначения (assignments)
+            // Показываем только активные или будущие курсы
             var activeCourses = _context.Courses
                 .Where(c => _context.TeacherAssignments.Any(a =>
                     a.CourseId == c.CourseId && a.EndDate >= today))
@@ -135,7 +146,6 @@ namespace WebApplication1.Controllers
             return View();
         }
 
-
         // ======== CREATE POST ========
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -144,7 +154,6 @@ namespace WebApplication1.Controllers
             Console.WriteLine("=== POST /TrainingRequests/Create ===");
             Console.WriteLine($"OrgId={trainingRequest.OrgId}, CourseId={trainingRequest.CourseId}, AssignmentId={trainingRequest.AssignmentId}, People={trainingRequest.NumberOfPeople}");
 
-            // Убираем навигационные поля из валидации
             ModelState.Remove("Org");
             ModelState.Remove("Course");
             ModelState.Remove("Assignment");
@@ -176,11 +185,6 @@ namespace WebApplication1.Controllers
 
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("❌ ModelState INVALID");
-                foreach (var e in ModelState)
-                    foreach (var err in e.Value.Errors)
-                        Console.WriteLine($"Ошибка: {err.ErrorMessage}");
-
                 ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "Name", trainingRequest.CourseId);
                 ViewData["OrgId"] = new SelectList(_context.Organizations, "OrgId", "Name", trainingRequest.OrgId);
                 return View(trainingRequest);
@@ -190,7 +194,6 @@ namespace WebApplication1.Controllers
             _context.Add(trainingRequest);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine("✅ Заявка успешно добавлена!");
             TempData["SuccessMessage"] = "Заявка успешно создана.";
             return RedirectToAction(nameof(Index));
         }
@@ -211,11 +214,9 @@ namespace WebApplication1.Controllers
             if (request == null)
                 return NotFound();
 
-            // Подготовим выпадающие списки
             ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "Name", request.CourseId);
             ViewData["OrgId"] = new SelectList(_context.Organizations, "OrgId", "Name", request.OrgId);
 
-            // Посчитаем текущую заполняемость
             var totalEnrolled = await _context.TrainingRequests
                 .Where(r => r.AssignmentId == request.AssignmentId)
                 .SumAsync(r => (int?)r.NumberOfPeople) ?? 0;
@@ -230,8 +231,6 @@ namespace WebApplication1.Controllers
             return View(request);
         }
 
-
-
         // ======== EDIT (POST) ========
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -240,7 +239,6 @@ namespace WebApplication1.Controllers
             if (id != trainingRequest.RequestId)
                 return NotFound();
 
-            // Убираем навигационные поля из проверки валидации
             ModelState.Remove("Org");
             ModelState.Remove("Course");
             ModelState.Remove("Assignment");
@@ -255,11 +253,9 @@ namespace WebApplication1.Controllers
             }
             else
             {
-                // Автоматически подставляем даты обучения из назначения
                 trainingRequest.StartDate = assignment.StartDate;
                 trainingRequest.EndDate = assignment.EndDate;
 
-                // Проверка вместимости
                 var existingPeople = await _context.TrainingRequests
                     .Where(r => r.AssignmentId == trainingRequest.AssignmentId && r.RequestId != trainingRequest.RequestId)
                     .SumAsync(r => (int?)r.NumberOfPeople) ?? 0;
@@ -276,7 +272,6 @@ namespace WebApplication1.Controllers
 
             if (!ModelState.IsValid)
             {
-                // если валидация не прошла — вернуть обратно с выпадающими списками
                 ViewData["CourseId"] = new SelectList(_context.Courses, "CourseId", "Name", trainingRequest.CourseId);
                 ViewData["OrgId"] = new SelectList(_context.Organizations, "OrgId", "Name", trainingRequest.OrgId);
                 return View(trainingRequest);
@@ -298,7 +293,5 @@ namespace WebApplication1.Controllers
 
             return RedirectToAction(nameof(Details), new { id = trainingRequest.RequestId });
         }
-
-
     }
 }

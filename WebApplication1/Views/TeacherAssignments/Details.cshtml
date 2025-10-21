@@ -1,42 +1,31 @@
 ﻿@model WebApplication1.Models.TeacherAssignment
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Детали назначения";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-secondary text-white">
+            <h3 class="mb-0">🔍 Детали назначения</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3 fw-semibold">Курс:</dt>
+                <dd class="col-sm-9">@Model.Course?.Name</dd>
 
-<div>
-    <h4>TeacherAssignment</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EndDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EndDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Course)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Course.CourseId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Teacher)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Teacher.TeacherId)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.AssignmentId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+                <dt class="col-sm-3 fw-semibold">Преподаватель:</dt>
+                <dd class="col-sm-9">@Model.Teacher?.FullName</dd>
+
+                <dt class="col-sm-3 fw-semibold">Дата начала:</dt>
+                <dd class="col-sm-9">@Model.StartDate.ToString("yyyy-MM-dd")</dd>
+
+                <dt class="col-sm-3 fw-semibold">Дата окончания:</dt>
+                <dd class="col-sm-9">@Model.EndDate.ToString("yyyy-MM-dd")</dd>
+            </dl>
+        </div>
+        <div class="card-footer bg-light d-flex justify-content-between">
+            <a asp-action="Edit" asp-route-id="@Model.AssignmentId" class="btn btn-outline-primary">✏️ Редактировать</a>
+            <a asp-action="Index" class="btn btn-outline-secondary">← Назад к списку</a>
+        </div>
+    </div>
 </div>
